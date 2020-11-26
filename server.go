@@ -1,7 +1,7 @@
 package main
 
 import (
-	// "fmt"
+	"fmt"
 	"encoding/json"
 	"log"
 	"net/http"
@@ -16,8 +16,16 @@ type Word struct {
 	Value string `json:"english-word"`
 }
 
+type Sentence struct {
+	Value string `json:"english-sentence"`
+}
+
 type TranslatedWord struct {
 	Value string `json:"gopher-word"`
+}
+
+type TranslatedSentence struct {
+	Value string `json:"gopher-sentence"`
 }
 
 func main() {
@@ -27,6 +35,7 @@ func main() {
 
 	// Route handles & endpoints
 	r.HandleFunc("/word", handleWordPostRequest).Methods("POST")
+	r.HandleFunc("/sentence", handleSentencePostRequest).Methods("POST")
 
 	// Start server
 	log.Fatal(http.ListenAndServe(":" + port, r))
@@ -68,6 +77,17 @@ func translateWord(word string) string {
 	return word
 }
 
+func translateSentence(sentence string) string {
+	// Translate sentence using translateWord function
+	translated := sentence
+
+	return translated
+}
+
+func saveTranslations(translation string) {
+	// update translation history array
+}
+
 func handleWordPostRequest(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
@@ -79,4 +99,19 @@ func handleWordPostRequest(w http.ResponseWriter, r *http.Request) {
 	translated.Value = translateWord(word.Value);
 
 	json.NewEncoder(w).Encode(translated)
+}
+
+func handleSentencePostRequest(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	var sentence Sentence
+	var translatedSentence TranslatedSentence
+
+	_ = json.NewDecoder(r.Body).Decode(&sentence)
+
+	fmt.Print(sentence.Value)
+
+	translatedSentence.Value = sentence.Value;
+
+	json.NewEncoder(w).Encode(translatedSentence)
 }
