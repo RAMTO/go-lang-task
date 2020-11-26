@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"reflect"
 	"strings"
+	"os"
 
 	"github.com/gorilla/mux"
 )
@@ -22,12 +23,13 @@ type TranslatedWord struct {
 func main() {
 	// Init router
 	r := mux.NewRouter()
+	port := os.Getenv("PORT");
 
 	// Route handles & endpoints
 	r.HandleFunc("/word", handleWordPostRequest).Methods("POST")
 
 	// Start server
-	log.Fatal(http.ListenAndServe(":3000", r))
+	log.Fatal(http.ListenAndServe(":" + port, r))
 }
 
 func itemExists(arrayType interface{}, item interface{}) bool {
