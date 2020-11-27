@@ -1,7 +1,6 @@
 package main
 
 import (
-	// "fmt"
 	"encoding/json"
 	"log"
 	"net/http"
@@ -78,19 +77,30 @@ func translateWord(word string) string {
 	consonantLetters := "xr"
 	
 	fistChar := word[0:1]
-	secondChar := word[1:2]
 	
 	prexif := "g"
 	prexifConsonant := "ge"
 	suffix := "ogo"
+
+	consonantsToBeReplacedSlice := []string{}
+
+	for _, value := range word {
+		if(itemExists(consonants, string(value))) {
+			consonantsToBeReplacedSlice = append(consonantsToBeReplacedSlice, string(value))
+		}else {
+			break
+		}
+	}
+	
+	consonantsToBeReplaced := strings.Join(consonantsToBeReplacedSlice[:], "")
 	
 	if itemExists(vowels, fistChar) { // Check for vowels
 		translated = prexif + word
 	} else if strings.HasPrefix(word, consonantLetters) { // Check for consonant
 		translated = prexifConsonant + word
-	} else if itemExists(consonants, fistChar) && itemExists(consonants, secondChar) { // Check for first 2 consonants
-		replaced := strings.Replace(word, fistChar + secondChar, "", -1)
-		translated = replaced + fistChar + secondChar + suffix
+	} else if itemExists(consonants, fistChar) { // Check for consonants
+		replaced := strings.Replace(word, consonantsToBeReplaced, "", -1)
+		translated = replaced + consonantsToBeReplaced + suffix
 	} 
 		
 	return translated
