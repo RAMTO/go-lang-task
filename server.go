@@ -73,7 +73,7 @@ func itemExists(arrayType interface{}, item interface{}) bool {
 func translateWord(word string) string {
 	translated := word
 	vowels := [6]string{"a", "e", "i", "o", "u", "y"}
-	consonants := [21]string{"b", "c", "d", "f", "g", "h", "j", "k", "l", "m", "n", "p", "q", "r", "s", "t", "v", "w", "x", "z"}
+	consonants := [20]string{"b", "c", "d", "f", "g", "h", "j", "k", "l", "m", "n", "p", "q", "r", "s", "t", "v", "w", "x", "z"}
 	consonantLetters := "xr"
 	
 	prexif := "g"
@@ -84,42 +84,46 @@ func translateWord(word string) string {
 	fistChar := word[0:1]
 	firstCharRemoved := strings.Replace(word, fistChar, "", -1)
 
-	if itemExists(vowels, fistChar) { // Check for vowels
+	// Check if word starts with vowel
+	if itemExists(vowels, fistChar) { 
 		translated = prexif + word
-	} else if strings.HasPrefix(word, consonantLetters) { // Check for spesific consonant
-		translated = prexifConsonant + word
-	} else if itemExists(consonants, fistChar) { // Check for other consonants
-		if(strings.HasPrefix(firstCharRemoved, additionalCheck)) { // Additional check for "qu"
-			replaced := strings.Replace(firstCharRemoved, additionalCheck, "", -1)
-			translated = replaced + fistChar + additionalCheck + suffix
-		} else {
-			consonantsToBeReplacedSlice := []string{}
-
-			for _, value := range word {
-				if(itemExists(consonants, string(value))) {
-					consonantsToBeReplacedSlice = append(consonantsToBeReplacedSlice, string(value))
-				}else {
-					break
+	} else {
+		// Check for spesific consonant
+		if strings.HasPrefix(word, consonantLetters) { 
+			translated = prexifConsonant + word
+		} else { 
+			// Additional check for "qu"
+			if(strings.HasPrefix(firstCharRemoved, additionalCheck)) { 
+				replaced := strings.Replace(firstCharRemoved, additionalCheck, "", -1)
+				translated = replaced + fistChar + additionalCheck + suffix
+			} else {
+				consonantsToBeReplacedSlice := []string{}
+	
+				for _, value := range word {
+					if(itemExists(consonants, string(value))) {
+						consonantsToBeReplacedSlice = append(consonantsToBeReplacedSlice, string(value))
+					}else {
+						break
+					}
 				}
+				
+				consonantsToBeReplaced := strings.Join(consonantsToBeReplacedSlice[:], "")
+	
+				replaced := strings.Replace(word, consonantsToBeReplaced, "", -1)
+				translated = replaced + consonantsToBeReplaced + suffix
 			}
-			
-			consonantsToBeReplaced := strings.Join(consonantsToBeReplacedSlice[:], "")
-
-			replaced := strings.Replace(word, consonantsToBeReplaced, "", -1)
-			translated = replaced + consonantsToBeReplaced + suffix
-		}
-	} 
+		} 
+	}
 		
 	return translated
 }
 
 func translateSentence(sentence string) string {
-	// Translate sentence using translateWord function
 	words := strings.Fields(sentence)
 	translatedWords := []string{};
 
-	for i :=0; i < len(words); i++ {
-		translatedWords = append(translatedWords, translateWord(words[i]))
+	for _, word := range words {
+		translatedWords = append(translatedWords, translateWord(word))
 	}
 
 	translated := strings.Join(translatedWords[:], " ")
