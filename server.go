@@ -76,31 +76,39 @@ func translateWord(word string) string {
 	consonants := [21]string{"b", "c", "d", "f", "g", "h", "j", "k", "l", "m", "n", "p", "q", "r", "s", "t", "v", "w", "x", "z"}
 	consonantLetters := "xr"
 	
-	fistChar := word[0:1]
-	
 	prexif := "g"
 	prexifConsonant := "ge"
 	suffix := "ogo"
-
-	consonantsToBeReplacedSlice := []string{}
-
-	for _, value := range word {
-		if(itemExists(consonants, string(value))) {
-			consonantsToBeReplacedSlice = append(consonantsToBeReplacedSlice, string(value))
-		}else {
-			break
-		}
-	}
+	additionalCheck := "qu"
 	
-	consonantsToBeReplaced := strings.Join(consonantsToBeReplacedSlice[:], "")
-	
+	fistChar := word[0:1]
+
 	if itemExists(vowels, fistChar) { // Check for vowels
 		translated = prexif + word
-	} else if strings.HasPrefix(word, consonantLetters) { // Check for consonant
+	} else if strings.HasPrefix(word, consonantLetters) { // Check for spesific consonant
 		translated = prexifConsonant + word
-	} else if itemExists(consonants, fistChar) { // Check for consonants
-		replaced := strings.Replace(word, consonantsToBeReplaced, "", -1)
-		translated = replaced + consonantsToBeReplaced + suffix
+	} else if itemExists(consonants, fistChar) { // Check for other consonants
+		// Additional check for "qu"
+		firstCharRemoved := strings.Replace(word, fistChar, "", -1)
+		if(strings.HasPrefix(firstCharRemoved, additionalCheck)) {
+			replaced := strings.Replace(firstCharRemoved, additionalCheck, "", -1)
+			translated = replaced + fistChar + additionalCheck + suffix
+		} else {
+			consonantsToBeReplacedSlice := []string{}
+
+			for _, value := range word {
+				if(itemExists(consonants, string(value))) {
+					consonantsToBeReplacedSlice = append(consonantsToBeReplacedSlice, string(value))
+				}else {
+					break
+				}
+			}
+			
+			consonantsToBeReplaced := strings.Join(consonantsToBeReplacedSlice[:], "")
+
+			replaced := strings.Replace(word, consonantsToBeReplaced, "", -1)
+			translated = replaced + consonantsToBeReplaced + suffix
+		}
 	} 
 		
 	return translated
