@@ -12,18 +12,22 @@ import (
 	"github.com/gorilla/mux"
 )
 
+// Word is...
 type Word struct {
 	Value string `json:"english-word"`
 }
 
+// Sentence is...
 type Sentence struct {
 	Value string `json:"english-sentence"`
 }
 
+// TranslatedWord is...
 type TranslatedWord struct {
 	Value string `json:"gopher-word"`
 }
 
+// TranslatedSentence is...
 type TranslatedSentence struct {
 	Value string `json:"gopher-sentence"`
 }
@@ -31,7 +35,13 @@ type TranslatedSentence struct {
 func main() {
 	// Init router
 	r := mux.NewRouter()
-	port := os.Getenv("PORT");
+	var port string
+
+	if len(os.Getenv("PORT")) > 0 {
+		port = os.Getenv("PORT")
+	} else {
+		port = os.Args[1]
+	}
 
 	// Route handles & endpoints
 	r.HandleFunc("/word", handleWordPostRequest).Methods("POST")
@@ -79,7 +89,14 @@ func translateWord(word string) string {
 
 func translateSentence(sentence string) string {
 	// Translate sentence using translateWord function
-	translated := sentence
+	words := strings.Fields(sentence)
+	translatedWords := [] string {};
+
+	for i :=0; i < len(words); i++ {
+		translatedWords = append(translatedWords, translateWord(words[i]))
+	}
+
+	translated := strings.Join(translatedWords[:], " ")
 
 	return translated
 }
@@ -108,10 +125,10 @@ func handleSentencePostRequest(w http.ResponseWriter, r *http.Request) {
 	var translatedSentence TranslatedSentence
 
 	_ = json.NewDecoder(r.Body).Decode(&sentence)
-
-	fmt.Print(sentence.Value)
-
-	translatedSentence.Value = sentence.Value;
+	
+	translatedSentence.Value = translateSentence(sentence.Value);
+	
+	fmt.Print(translatedSentence.Value)
 
 	json.NewEncoder(w).Encode(translatedSentence)
 }
