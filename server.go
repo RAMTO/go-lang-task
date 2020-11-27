@@ -82,15 +82,14 @@ func translateWord(word string) string {
 	additionalCheck := "qu"
 	
 	fistChar := word[0:1]
+	firstCharRemoved := strings.Replace(word, fistChar, "", -1)
 
 	if itemExists(vowels, fistChar) { // Check for vowels
 		translated = prexif + word
 	} else if strings.HasPrefix(word, consonantLetters) { // Check for spesific consonant
 		translated = prexifConsonant + word
 	} else if itemExists(consonants, fistChar) { // Check for other consonants
-		// Additional check for "qu"
-		firstCharRemoved := strings.Replace(word, fistChar, "", -1)
-		if(strings.HasPrefix(firstCharRemoved, additionalCheck)) {
+		if(strings.HasPrefix(firstCharRemoved, additionalCheck)) { // Additional check for "qu"
 			replaced := strings.Replace(firstCharRemoved, additionalCheck, "", -1)
 			translated = replaced + fistChar + additionalCheck + suffix
 		} else {
