@@ -1,10 +1,29 @@
+# Go lang task
+
+Made with 💚 by Martin Dobrev
+
+## Instructions
+
+Run code with the following commands:
+
 ```
 PORT=3000 go run server.go
 ```
 
+or
+
 ```
-gow -c run . 3000
+go run server.go 3000
 ```
+
+Application should run on `http://localhost:3000/`
+
+### API endpoints
+
+Url:
+`/word`
+
+Example body:
 
 ```
 {
@@ -12,8 +31,51 @@ gow -c run . 3000
 }
 ```
 
+Example response:
+
 ```
 {
-    "english-sentence":"apple apple"
+    "gopher-word": "gapple"
+}
+```
+
+---
+
+Url:
+`/sentence`
+
+Body:
+
+```
+{
+    "english-sentence":"apple xray chair square test my"
+}
+```
+
+Example response:
+
+```
+{
+    "gopher-sentence": "gapple gexray airchogo aresquogo estogo ymogo alepogo"
+}
+```
+
+---
+
+Url:
+`/history`
+
+Example response:
+
+```
+{
+    "history": [
+        {
+            "apple": "gapple"
+        },
+        {
+            "apple xray chair square test my papple": "gapple gexray airchogo aresquogo estogo ymogo alepogo"
+        }
+    ]
 }
 ```
