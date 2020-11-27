@@ -109,7 +109,7 @@ func translateWord(word string) string {
 func translateSentence(sentence string) string {
 	// Translate sentence using translateWord function
 	words := strings.Fields(sentence)
-	translatedWords := [] string {};
+	translatedWords := []string{};
 
 	for i :=0; i < len(words); i++ {
 		translatedWords = append(translatedWords, translateWord(words[i]))
@@ -156,8 +156,15 @@ func handleSentencePostRequest(w http.ResponseWriter, r *http.Request) {
 func handleHistoryGetRequest(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	// fmt.Print(historyMap)
-	finalMap := make(map[string]map[string]string)
-	finalMap["history"] = historyMap
+	finalMap := make(map[string][]map[string]string)
+	finalSlice := make([]map[string]string, 0)
+
+	for key, value := range historyMap {
+		mapElement := map[string]string{key: value}
+		finalSlice = append(finalSlice, mapElement)
+	}
+
+	finalMap["history"] = finalSlice
+
 	json.NewEncoder(w).Encode(finalMap)
 }
