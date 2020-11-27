@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	// "fmt"
 	"encoding/json"
 	"log"
 	"net/http"
@@ -142,7 +142,8 @@ func handleSentencePostRequest(w http.ResponseWriter, r *http.Request) {
 func handleHistoryGetRequest(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	fmt.Print(historyMap)
-
-	json.NewEncoder(w).Encode(historyMap)
+	// fmt.Print(historyMap)
+	finalMap := make(map[string]map[string]string)
+	finalMap["history"] = historyMap
+	json.NewEncoder(w).Encode(finalMap)
 }
