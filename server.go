@@ -74,21 +74,25 @@ func itemExists(arrayType interface{}, item interface{}) bool {
 func translateWord(word string) string {
 	translated := word
 	vowels := [6]string{"a", "e", "i", "o", "u", "y"}
+	consonants := [21]string{"b", "c", "d", "f", "g", "h", "j", "k", "l", "m", "n", "p", "q", "r", "s", "t", "v", "w", "x", "z"}
 	consonantLetters := "xr"
+	
 	fistChar := word[0:1]
+	secondChar := word[1:2]
+	
 	prexif := "g"
 	prexifConsonant := "ge"
+	suffix := "ogo"
 	
-	// Check for vowels
-	if itemExists(vowels, fistChar) {
+	if itemExists(vowels, fistChar) { // Check for vowels
 		translated = prexif + word
+	} else if strings.HasPrefix(word, consonantLetters) { // Check for consonant
+		translated = prexifConsonant + word
+	} else if itemExists(consonants, fistChar) && itemExists(consonants, secondChar) { // Check for first 2 consonants
+		replaced := strings.Replace(word, fistChar + secondChar, "", -1)
+		translated = replaced + fistChar + secondChar + suffix
 	} 
 		
-	// Check for consonant
-	if strings.HasPrefix(word, consonantLetters) {
-		translated = prexifConsonant + word
-	}
-
 	return translated
 }
 
