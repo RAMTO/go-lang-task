@@ -32,6 +32,8 @@ type TranslatedSentence struct {
 	Value string `json:"gopher-sentence"`
 }
 
+var historyMap = make(map[string]string)
+
 func main() {
 	// Init router
 	r := mux.NewRouter()
@@ -46,11 +48,13 @@ func main() {
 	// Route handles & endpoints
 	r.HandleFunc("/word", handleWordPostRequest).Methods("POST")
 	r.HandleFunc("/sentence", handleSentencePostRequest).Methods("POST")
+	r.HandleFunc("/history", handleHistoryGetRequest).Methods("GET")
 
 	// Start server
 	log.Fatal(http.ListenAndServe(":" + port, r))
 }
 
+// Helper functions
 func itemExists(arrayType interface{}, item interface{}) bool {
 	arr := reflect.ValueOf(arrayType)
 
@@ -68,6 +72,7 @@ func itemExists(arrayType interface{}, item interface{}) bool {
 }
 
 func translateWord(word string) string {
+	translated := word
 	vowels := [6]string{"a", "e", "i", "o", "u", "y"}
 	consonantLetters := "xr"
 	fistChar := word[0:1]
@@ -76,15 +81,15 @@ func translateWord(word string) string {
 	
 	// Check for vowels
 	if itemExists(vowels, fistChar) {
-		word = prexif + word
+		translated = prexif + word
 	} 
 		
 	// Check for consonant
 	if strings.HasPrefix(word, consonantLetters) {
-		word = prexifConsonant + word
+		translated = prexifConsonant + word
 	}
 
-	return word
+	return translated
 }
 
 func translateSentence(sentence string) string {
@@ -101,10 +106,7 @@ func translateSentence(sentence string) string {
 	return translated
 }
 
-func saveTranslations(translation string) {
-	// update translation history array
-}
-
+// Route handlers
 func handleWordPostRequest(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
@@ -114,6 +116,9 @@ func handleWordPostRequest(w http.ResponseWriter, r *http.Request) {
 	_ = json.NewDecoder(r.Body).Decode(&word)
 
 	translated.Value = translateWord(word.Value);
+
+	// Log in history
+	historyMap[word.Value] = translated.Value
 
 	json.NewEncoder(w).Encode(translated)
 }
@@ -128,7 +133,16 @@ func handleSentencePostRequest(w http.ResponseWriter, r *http.Request) {
 	
 	translatedSentence.Value = translateSentence(sentence.Value);
 	
-	fmt.Print(translatedSentence.Value)
+	// Log in history
+	historyMap[sentence.Value] = translatedSentence.Value
 
 	json.NewEncoder(w).Encode(translatedSentence)
+}
+
+func handleHistoryGetRequest(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	fmt.Print(historyMap)
+
+	json.NewEncoder(w).Encode(historyMap)
 }
