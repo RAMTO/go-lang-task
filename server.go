@@ -14,6 +14,10 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
+
+	// translationsMongo "github.com/RAMTO/go-lang-task/persistance/translation"
+	translationsModel "github.com/RAMTO/go-lang-task/model"
+	translationsRepo "github.com/RAMTO/go-lang-task/repository"
 )
 
 // Word is...
@@ -39,17 +43,22 @@ type TranslatedSentence struct {
 var historyMap = make(map[string]string)
 
 var client *mongo.Client
+var db *mongo.Database
 
 func main() {
 	// Connect to Mongo
-	client = getClient()
+	client, db = connectToDb()
 	err := client.Ping(context.Background(), readpref.Primary())
+
+	defer client.Disconnect(context.Background())
 
 	if err != nil {
 		log.Fatal("Couldn't connect to the database", err)
 	} else {
 		log.Println("Connected to MongoDB!")
 	}
+
+	// translationRepo := translationsMongo.NewTranslationRepository(db)
 	
 	// Init router
 	r := mux.NewRouter()
@@ -70,20 +79,23 @@ func main() {
 	log.Fatal(http.ListenAndServe(":" + port, r))
 }
 
-func getClient() *mongo.Client {
+func connectToDb() (*mongo.Client, *mongo.Database) {
 	clientOptions := options.Client().ApplyURI("mongodb+srv://test:test123@cluster0.3hy86.mongodb.net/myFirstDatabase?retryWrites=true&w=majority")
 
 	client, err := mongo.NewClient(clientOptions)
 	if err != nil {
 		log.Fatal(err)
 	}
-	
+
 	err = client.Connect(context.Background())
 	if err != nil {
 		log.Fatal(err)
+		panic(err)
 	}
 
-	return client
+	db := client.Database("translations")
+
+	return client, db
 }
 
 // Helper functions
@@ -178,13 +190,15 @@ func handleWordPostRequest(w http.ResponseWriter, r *http.Request) {
 	// Log in history
 	historyMap[word.Value] = translated.Value
 
-	translationsDatabase := client.Database("translations")
-	wordsCollection := translationsDatabase.Collection("words")
+	// wordsCollection := db.Collection("words")
 
-	wordsCollection.InsertOne(context.Background(), bson.D{
-		{"original", word.Value},
-		{"translated", translated.Value},
-	})
+	wordObj := &translationsModel.Word{Original: word.Value, Translated: translated.Value}
+	translationsRepo.SaveWord(wordObj)
+
+	// wordsCollection.InsertOne(context.Background(), bson.D{
+	// 	{"original", word.Value},
+	// 	{"translated", translated.Value},
+	// })
 
 	json.NewEncoder(w).Encode(translated)
 }
@@ -202,13 +216,15 @@ func handleSentencePostRequest(w http.ResponseWriter, r *http.Request) {
 	// Log in history
 	historyMap[sentence.Value] = translatedSentence.Value
 	
-	translationsDatabase := client.Database("translations")
-	sentencesCollection := translationsDatabase.Collection("sentences")
+	// sentencesCollection := db.Collection("sentences")
 
-	sentencesCollection.InsertOne(context.Background(), bson.D{
-		{"original", sentence.Value},
-		{"translated", translatedSentence.Value},
-	})
+	sentenceObj := &translationsModel.Sentence{Original: sentence.Value, Translated: translatedSentence.Value}
+	translationsRepo.SaveSentence(sentenceObj)
+
+	// sentencesCollection.InsertOne(context.Background(), bson.D{
+	// 	{"original", sentence.Value},
+	// 	{"translated", translatedSentence.Value},
+	// })
 
 	json.NewEncoder(w).Encode(translatedSentence)
 }
