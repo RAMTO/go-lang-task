@@ -39,6 +39,8 @@ Example response:
 }
 ```
 
+![alt text](./results/mongo_db_words.png "Words")
+
 ---
 
 Url:
@@ -59,6 +61,8 @@ Example response:
     "gopher-sentence": "gapple gexray airchogo aresquogo estogo ymogo alepogo"
 }
 ```
+
+![alt text](./results/mongo_db_sentences.png "Words")
 
 ---
 

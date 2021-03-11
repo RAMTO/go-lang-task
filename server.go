@@ -7,8 +7,13 @@ import (
 	"reflect"
 	"strings"
 	"os"
+	"context"
 
 	"github.com/gorilla/mux"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/mongo/readpref"
 )
 
 // Word is...
@@ -33,7 +38,19 @@ type TranslatedSentence struct {
 
 var historyMap = make(map[string]string)
 
+var client *mongo.Client
+
 func main() {
+	// Connect to Mongo
+	client = getClient()
+	err := client.Ping(context.Background(), readpref.Primary())
+
+	if err != nil {
+		log.Fatal("Couldn't connect to the database", err)
+	} else {
+		log.Println("Connected to MongoDB!")
+	}
+	
 	// Init router
 	r := mux.NewRouter()
 	var port string
@@ -51,6 +68,22 @@ func main() {
 
 	// Start server
 	log.Fatal(http.ListenAndServe(":" + port, r))
+}
+
+func getClient() *mongo.Client {
+	clientOptions := options.Client().ApplyURI("mongodb+srv://test:test123@cluster0.3hy86.mongodb.net/myFirstDatabase?retryWrites=true&w=majority")
+
+	client, err := mongo.NewClient(clientOptions)
+	if err != nil {
+		log.Fatal(err)
+	}
+	
+	err = client.Connect(context.Background())
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return client
 }
 
 // Helper functions
@@ -145,6 +178,14 @@ func handleWordPostRequest(w http.ResponseWriter, r *http.Request) {
 	// Log in history
 	historyMap[word.Value] = translated.Value
 
+	translationsDatabase := client.Database("translations")
+	wordsCollection := translationsDatabase.Collection("words")
+
+	wordsCollection.InsertOne(context.Background(), bson.D{
+		{"original", word.Value},
+		{"translated", translated.Value},
+	})
+
 	json.NewEncoder(w).Encode(translated)
 }
 
@@ -160,6 +201,14 @@ func handleSentencePostRequest(w http.ResponseWriter, r *http.Request) {
 	
 	// Log in history
 	historyMap[sentence.Value] = translatedSentence.Value
+	
+	translationsDatabase := client.Database("translations")
+	sentencesCollection := translationsDatabase.Collection("sentences")
+
+	sentencesCollection.InsertOne(context.Background(), bson.D{
+		{"original", sentence.Value},
+		{"translated", translatedSentence.Value},
+	})
 
 	json.NewEncoder(w).Encode(translatedSentence)
 }
