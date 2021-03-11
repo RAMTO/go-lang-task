@@ -18,22 +18,22 @@ import (
 
 // Word is...
 type Word struct {
-	Value string `json:"english-word"`
+	Value string `json:"english-word" bson:"english-word"`
 }
 
 // Sentence is...
 type Sentence struct {
-	Value string `json:"english-sentence"`
+	Value string `json:"english-sentence" bson:"english-sentence"`
 }
 
 // TranslatedWord is...
 type TranslatedWord struct {
-	Value string `json:"gopher-word"`
+	Value string `json:"gopher-word" bson:"gopher-word"`
 }
 
 // TranslatedSentence is...
 type TranslatedSentence struct {
-	Value string `json:"gopher-sentence"`
+	Value string `json:"gopher-sentence" bson:"gopher-sentence"`
 }
 
 var historyMap = make(map[string]string)
