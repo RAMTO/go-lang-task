@@ -10,14 +10,12 @@ import (
 	"context"
 
 	"github.com/gorilla/mux"
-	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
 
-	// translationsMongo "github.com/RAMTO/go-lang-task/persistance/translation"
+	translationsMongo "github.com/RAMTO/go-lang-task/persistance"
 	translationsModel "github.com/RAMTO/go-lang-task/model"
-	translationsRepo "github.com/RAMTO/go-lang-task/repository"
 )
 
 // Word is...
@@ -44,6 +42,7 @@ var historyMap = make(map[string]string)
 
 var client *mongo.Client
 var db *mongo.Database
+var translationsRepo *translationsMongo.TranslationRepository;
 
 func main() {
 	// Connect to Mongo
@@ -58,8 +57,8 @@ func main() {
 		log.Println("Connected to MongoDB!")
 	}
 
-	// translationRepo := translationsMongo.NewTranslationRepository(db)
-	
+	translationsRepo = translationsMongo.NewTranslationRepository(db)
+
 	// Init router
 	r := mux.NewRouter()
 	var port string
@@ -190,15 +189,8 @@ func handleWordPostRequest(w http.ResponseWriter, r *http.Request) {
 	// Log in history
 	historyMap[word.Value] = translated.Value
 
-	// wordsCollection := db.Collection("words")
-
 	wordObj := &translationsModel.Word{Original: word.Value, Translated: translated.Value}
 	translationsRepo.SaveWord(wordObj)
-
-	// wordsCollection.InsertOne(context.Background(), bson.D{
-	// 	{"original", word.Value},
-	// 	{"translated", translated.Value},
-	// })
 
 	json.NewEncoder(w).Encode(translated)
 }
@@ -216,15 +208,8 @@ func handleSentencePostRequest(w http.ResponseWriter, r *http.Request) {
 	// Log in history
 	historyMap[sentence.Value] = translatedSentence.Value
 	
-	// sentencesCollection := db.Collection("sentences")
-
 	sentenceObj := &translationsModel.Sentence{Original: sentence.Value, Translated: translatedSentence.Value}
 	translationsRepo.SaveSentence(sentenceObj)
-
-	// sentencesCollection.InsertOne(context.Background(), bson.D{
-	// 	{"original", sentence.Value},
-	// 	{"translated", translatedSentence.Value},
-	// })
 
 	json.NewEncoder(w).Encode(translatedSentence)
 }
